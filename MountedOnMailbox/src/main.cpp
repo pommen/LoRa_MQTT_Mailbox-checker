@@ -1,4 +1,3 @@
-#include <Arduino.h>
 // LoRa 9x_TX
 // -*- mode: C++ -*-
 // Example sketch showing how to create a simple messaging client (transmitter)
@@ -8,21 +7,21 @@
 // It is designed to work with the other example LoRa9x_RX
 //https://learn.adafruit.com/adafruit-rfm69hcw-and-rfm96-rfm95-rfm98-lora-packet-padio-breakouts/rfm9x-test
 //http://forum.arduino.cc/index.php?topic=313587.0
-#include <avr/power.h>
 
+#include <Arduino.h>
+#include <avr/power.h>
 #include <SPI.h>
 #include <RH_RF95.h>
-#include<LowPower.h>
+#include <LowPower.h>
 #define RFM95_CS 9
 #define RFM95_RST A0
 #define RFM95_INT 2
-
+#define boxLidPin 3
 // Change to 434.0 or other frequency, must match RX's freq!
 #define RF95_FREQ 868.0
 
 // Singleton instance of the radio driver
-RH_RF95 rf95(RFM95_CS, RFM95_INT) ;
-
+RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
 //protos
 void wakeup();
@@ -31,26 +30,31 @@ int battVolt();
 void whattoSend();
 
 //Vars:
-bool LidHasBeenOpened = 0;
-long counter =0;
+bool LidHasBeenOpened = 0;    //flag for keeping track if the mailbox lid has been opened.
+int coolDownTimer = 0;        //debounce timer for the lid, so we dont spam.
+bool messageSentFlag = false; //flag for keeping track if we have sent something
 
-struct dataStruct{
-  float BatteryVoltage; 
+//This is the struct we send
+struct dataStruct
+{
+  float BatteryVoltage;
   bool lidOpened;
-  unsigned long counter;
-   
-}myData;
+  int ID;
+
+} myData;
+
 byte tx_buf[sizeof(myData)] = {0};
 
-void setup() 
+void setup()
 {
   pinMode(RFM95_RST, OUTPUT);
+  pinMode(boxLidPin, INPUT);
   digitalWrite(RFM95_RST, HIGH);
 
   Serial.begin(9600);
   delay(100);
 
-  Serial.println("Arduino LoRa TX Test!");
+  Serial.println("Mailbox lid detector...With LoRa! :D ");
 
   // manual reset
   digitalWrite(RFM95_RST, LOW);
@@ -58,77 +62,90 @@ void setup()
   digitalWrite(RFM95_RST, HIGH);
   delay(10);
 
-  while (!rf95.init()) {
+  while (!rf95.init())
+  {
     Serial.println("LoRa radio init failed");
-    while (1);
+    while (1)
+      ;
   }
   Serial.println("LoRa radio init OK!");
 
   // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
-  if (!rf95.setFrequency(RF95_FREQ)) {
+  if (!rf95.setFrequency(RF95_FREQ))
+  {
     Serial.println("setFrequency failed");
-    while (1);
+    while (1)
+      ;
   }
-  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-  
+  Serial.print("Set Freq to: ");
+  Serial.println(RF95_FREQ);
+
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
   // The default transmitter power is 13dBm, using PA_BOOST.
-  // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
+  // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(23, false);
-}
 
-int16_t packetnum = 0;  // packet counter, we increment per xmission
+  power_twi_disable(); // TWI (I2C) disabled
+  power_adc_disable(); // ADC converter disabled
+
+  myData.ID = 21; //21  är brevlådan
+  //attachInterrupt(digitalPinToInterrupt(boxLidPin), wakeup, FALLING);
+}
 
 void loop()
 {
 
+  if (LidHasBeenOpened && !messageSentFlag)
+  {
+    whattoSend();
+  }
 
-  whattoSend();
-  
-  // Now wait for a reply
- 
+  //Serial.println("Waiting for reply...");
 
-  Serial.println("Waiting for reply..."); 
-  //delay(10);
-    
-sleep();
+  //going to sleep
+
+  if (millis() - coolDownTimer > 30000)
+  {
+    sleep();
+  }
+  /* else
+  {
+    Serial.println(millis() - coolDownTimer);
+  } */
 }
-
 
 void whattoSend()
 {
- uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+  messageSentFlag = true;
+  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
-myData.BatteryVoltage=battVolt() /1000.00;
-myData.lidOpened = LidHasBeenOpened;
-myData.counter=counter++;
-Serial.println("Sending to rf95_server");
-  
-  byte zize=sizeof(myData);  
-  Serial.println("Sending..."); delay(10);
+  myData.BatteryVoltage = battVolt() / 1000.00;
+  myData.lidOpened = LidHasBeenOpened;
+  //myData.counter = counter++;
 
+  Serial.println("Sending to rf95_server");
+  byte zize = sizeof(myData);
+  Serial.println("Sending...");
+  delay(10);
 
-  memcpy(tx_buf, &myData, sizeof(myData) );
+  memcpy(tx_buf, &myData, sizeof(myData));
   rf95.send((uint8_t *)tx_buf, zize);
 
-
- //rf95.send((uint8_t *)battVolt, sizeof(battVolt));
-  Serial.println("Waiting for packet to complete..."); 
-  //delay(10);
+  Serial.println("Waiting for packet to complete...");
   rf95.sleep();
   rf95.waitPacketSent();
   rf95.sleep();
   if (rf95.waitAvailableTimeout(1000))
-  { 
-    // Should be a reply message for us now   
+  {
+    // Should be a reply message for us now
     if (rf95.recv(buf, &len))
-   {
+    {
       Serial.print("Got reply: ");
-      Serial.println((char*)buf);
+      Serial.println((char *)buf);
       Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);    
+      Serial.println(rf95.lastRssi(), DEC);
     }
     else
     {
@@ -139,59 +156,66 @@ Serial.println("Sending to rf95_server");
   {
     Serial.println("No reply, is there a listener around?");
   }
- // delay(1000);
+  // delay(1000);
 }
-
 
 void sleep()
 {
+  Serial.println("Going to sleep");
+  delay(200);
+
+  messageSentFlag = false;
+  LidHasBeenOpened = false;
   rf95.sleep();
-delay(50);
-LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_OFF);
+
+  attachInterrupt(digitalPinToInterrupt(boxLidPin), wakeup, FALLING);
+  delay(200);
+  // LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_OFF);
+  LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
+  detachInterrupt(digitalPinToInterrupt(boxLidPin));
+  LidHasBeenOpened = true;
+  LidHasBeenOpened = true;
+  coolDownTimer = millis();
+  Serial.println("Woken up");
 }
-
-
 
 void wakeup()
 {
-
+  //delay(200);
 }
 
 int battVolt()
 {
-        power_adc_enable(); // ADC converter
-long result=0;
+  power_adc_enable(); // ADC converter
+  long result = 0;
 
-        // Read 1.1V reference against AVcc
-        // set the reference to Vcc and the measurement to the internal 1.1V reference
-          #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
-        ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-          #elif defined (__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
-        ADMUX = _BV(MUX5) | _BV(MUX0);
-          #elif defined (__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
-        ADMUX = _BV(MUX3) | _BV(MUX2);
-          #else
-        ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-          #endif
+  // Read 1.1V reference against AVcc
+  // set the reference to Vcc and the measurement to the internal 1.1V reference
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+  ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+#elif defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
+  ADMUX = _BV(MUX5) | _BV(MUX0);
+#elif defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+  ADMUX = _BV(MUX3) | _BV(MUX2);
+#else
+  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+#endif
 
-        delay(2);   // Wait for Vref to settle
-        ADCSRA |= _BV(ADSC);   // Start conversion
-        while (bit_is_set(ADCSRA,ADSC)) ;  // measuring
+  delay(2);            // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Start conversion
+  while (bit_is_set(ADCSRA, ADSC))
+    ; // measuring
 
-        uint8_t low  = ADCL;   // must read ADCL first - it then locks ADCH
-        uint8_t high = ADCH;   // unlocks both
+  uint8_t low = ADCL;  // must read ADCL first - it then locks ADCH
+  uint8_t high = ADCH; // unlocks both
 
-        result = (high<<8) | low;
+  result = (high << 8) | low;
 
-        result = 1125300L / result;   // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
-        power_adc_disable();   // ADC converter
+  result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+  power_adc_disable();        // ADC converter
 
-        return result;
+  return result;
 }
-
-
-
-
 
 /*
    Name: powerDown
@@ -234,6 +258,7 @@ long result=0;
    power_timer1_enable(); // Timer 1
    power_timer2_enable(); // Timer 2
    power_twi_enable(); // TWI (I2C)
+
    Disabling:
    power_adc_disable(); // ADC converter
    power_spi_disable(); // SPI
