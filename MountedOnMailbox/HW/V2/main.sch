@@ -120,11 +120,11 @@ Text GLabel 9200 1450 2    60   Input ~ 0
 MISO
 Text GLabel 9200 1550 2    60   Input ~ 0
 SCK
-Text GLabel 2750 3950 2    60   Input ~ 0
+Text GLabel 2550 3900 2    60   Input ~ 0
 MOSI
-Text GLabel 2750 3850 2    60   Input ~ 0
+Text GLabel 2550 3800 2    60   Input ~ 0
 MISO
-Text GLabel 2750 4050 2    60   Input ~ 0
+Text GLabel 2550 4000 2    60   Input ~ 0
 SCK
 $Comp
 L power:GND #PWR015
@@ -140,23 +140,23 @@ $EndComp
 $Comp
 L power:VCC #PWR05
 U 1 1 5A10DDCF
-P 2250 3550
-F 0 "#PWR05" H 2250 3400 50  0001 C CNN
-F 1 "VCC" H 2267 3723 50  0000 C CNN
-F 2 "" H 2250 3550 50  0001 C CNN
-F 3 "" H 2250 3550 50  0001 C CNN
-	1    2250 3550
+P 2050 3500
+F 0 "#PWR05" H 2050 3350 50  0001 C CNN
+F 1 "VCC" H 2067 3673 50  0000 C CNN
+F 2 "" H 2050 3500 50  0001 C CNN
+F 3 "" H 2050 3500 50  0001 C CNN
+	1    2050 3500
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR06
 U 1 1 5A10DDD0
-P 2250 4450
-F 0 "#PWR06" H 2250 4200 50  0001 C CNN
-F 1 "GND" H 2200 4600 50  0000 C CNN
-F 2 "" H 2250 4450 50  0001 C CNN
-F 3 "" H 2250 4450 50  0001 C CNN
-	1    2250 4450
+P 2050 4400
+F 0 "#PWR06" H 2050 4150 50  0001 C CNN
+F 1 "GND" H 2000 4550 50  0000 C CNN
+F 2 "" H 2050 4400 50  0001 C CNN
+F 3 "" H 2050 4400 50  0001 C CNN
+	1    2050 4400
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -288,7 +288,7 @@ Wire Wire Line
 	950  3550 1550 3550
 Text GLabel 1550 3550 2    60   Input ~ 0
 RST
-Text GLabel 2750 4150 2    60   Input ~ 0
+Text GLabel 2550 4100 2    60   Input ~ 0
 reset_in
 Wire Wire Line
 	7200 1150 7200 1350
@@ -955,12 +955,12 @@ $EndComp
 $Comp
 L Connector:AVR-ISP-6 J4
 U 1 1 5B672EDA
-P 2350 4050
-F 0 "J4" H 2070 4146 50  0000 R CNN
-F 1 "AVR-ISP-6" H 2070 4055 50  0000 R CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_2x03_P2.54mm_Vertical" V 2100 4100 50  0001 C CNN
-F 3 " ~" H 1075 3500 50  0001 C CNN
-	1    2350 4050
+P 2150 4000
+F 0 "J4" H 1870 4096 50  0000 R CNN
+F 1 "AVR-ISP-6" H 1870 4005 50  0000 R CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_2x03_P2.54mm_Vertical" V 1900 4050 50  0001 C CNN
+F 3 " ~" H 875 3450 50  0001 C CNN
+	1    2150 4000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
