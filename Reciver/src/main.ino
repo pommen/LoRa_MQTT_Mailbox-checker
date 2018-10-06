@@ -17,7 +17,7 @@
 
 #pragma region Globals
 const char *ssid = "jotjena";         // WIFI network name
-const char *password = "wifipassword"; // WIFI network password
+const char *password = "hejhejhallo"; // WIFI network password
 uint8_t connection_state = 0;         // Connected to WIFI or not
 uint16_t reconnect_interval = 10000;  // If not connected wait time to try again
 #pragma endregion Globals
@@ -30,8 +30,8 @@ uint16_t reconnect_interval = 10000;  // If not connected wait time to try again
   GPIO16 (D0) <----> SEL Chip Select (depending on bottom solder PAD position) 
   */
 
-int RFM95_CS = D8;
-int RFM95_RST = D2;
+int RFM95_CS = D8; 
+int RFM95_RST = D0;
 int RFM95_INT = D1;
 
 // Change to 434.0 or other frequency, must match RX's freq!

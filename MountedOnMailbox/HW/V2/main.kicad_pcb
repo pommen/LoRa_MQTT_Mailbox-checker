@@ -1768,7 +1768,7 @@
   (segment (start 139.7 63.5) (end 141.351 63.5) (width 0.4) (layer F.Cu) (net 8))
   (segment (start 141.741 63.89) (end 141.741 65.024) (width 0.4) (layer F.Cu) (net 8))
   (segment (start 141.351 63.5) (end 141.741 63.89) (width 0.4) (layer F.Cu) (net 8))
-  (via (at 150.114 58.293) (size 0.8) (drill 0.5) (layers F.Cu B.Cu) (net 8))
+  (via (at 150.114 58.293) (size 0.8) (drill 0.5) (layers F.Cu B.Cu) (net 8) (status 1000000))
   (segment (start 150.105 60.325) (end 150.105 58.302) (width 0.4) (layer F.Cu) (net 8))
   (segment (start 150.105 58.302) (end 150.114 58.293) (width 0.4) (layer F.Cu) (net 8))
   (segment (start 151.13 115.189) (end 151.384 114.935) (width 0.4) (layer F.Cu) (net 8))

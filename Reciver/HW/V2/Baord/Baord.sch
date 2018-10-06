@@ -215,7 +215,7 @@ Text GLabel 8800 2600 0    50   Input ~ 0
 CS
 Text GLabel 10350 3000 2    50   Input ~ 0
 INT
-Text GLabel 4300 2500 2    50   Input ~ 0
+Text GLabel 4300 2600 2    50   Input ~ 0
 INT
 Text GLabel 4300 2200 2    50   Input ~ 0
 RESET
