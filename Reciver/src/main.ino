@@ -16,8 +16,8 @@
 #include "Gsender.h"
 
 #pragma region Globals
-const char *ssid = "jotjena";         // WIFI network name
-const char *password = "hejhejhallo"; // WIFI network password
+const char *ssid = "mywifissid";         // WIFI network name
+const char *password = "*mywifipassword"; // WIFI network password
 uint8_t connection_state = 0;         // Connected to WIFI or not
 uint16_t reconnect_interval = 10000;  // If not connected wait time to try again
 #pragma endregion Globals
